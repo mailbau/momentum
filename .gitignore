@@ -26,3 +26,7 @@ Thumbs.db
 
 # Postgres data volume (if bind-mounted locally)
 pgdata/
+
+# Python cache (skills)
+**/__pycache__/
+*.pyc

@@ -12,6 +12,138 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Difficulty string
+
+const (
+	DifficultyEasy   Difficulty = "easy"
+	DifficultyMedium Difficulty = "medium"
+	DifficultyHard   Difficulty = "hard"
+	DifficultyExpert Difficulty = "expert"
+)
+
+func (e *Difficulty) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Difficulty(s)
+	case string:
+		*e = Difficulty(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Difficulty: %T", src)
+	}
+	return nil
+}
+
+type NullDifficulty struct {
+	Difficulty Difficulty `json:"difficulty"`
+	Valid      bool       `json:"valid"` // Valid is true if Difficulty is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDifficulty) Scan(value interface{}) error {
+	if value == nil {
+		ns.Difficulty, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Difficulty.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDifficulty) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Difficulty), nil
+}
+
+type Priority string
+
+const (
+	PriorityLow      Priority = "low"
+	PriorityMedium   Priority = "medium"
+	PriorityHigh     Priority = "high"
+	PriorityCritical Priority = "critical"
+)
+
+func (e *Priority) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Priority(s)
+	case string:
+		*e = Priority(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Priority: %T", src)
+	}
+	return nil
+}
+
+type NullPriority struct {
+	Priority Priority `json:"priority"`
+	Valid    bool     `json:"valid"` // Valid is true if Priority is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPriority) Scan(value interface{}) error {
+	if value == nil {
+		ns.Priority, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Priority.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPriority) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Priority), nil
+}
+
+type SrlStage string
+
+const (
+	SrlStagePlanning    SrlStage = "planning"
+	SrlStageMonitoring  SrlStage = "monitoring"
+	SrlStageControlling SrlStage = "controlling"
+	SrlStageReflection  SrlStage = "reflection"
+)
+
+func (e *SrlStage) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SrlStage(s)
+	case string:
+		*e = SrlStage(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SrlStage: %T", src)
+	}
+	return nil
+}
+
+type NullSrlStage struct {
+	SrlStage SrlStage `json:"srl_stage"`
+	Valid    bool     `json:"valid"` // Valid is true if SrlStage is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSrlStage) Scan(value interface{}) error {
+	if value == nil {
+		ns.SrlStage, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SrlStage.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSrlStage) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SrlStage), nil
+}
+
 type UserRole string
 
 const (
@@ -54,6 +186,51 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type Card struct {
+	ID             uuid.UUID          `json:"id"`
+	UserID         uuid.UUID          `json:"user_id"`
+	CourseID       uuid.UUID          `json:"course_id"`
+	StrategyID     pgtype.UUID        `json:"strategy_id"`
+	Title          string             `json:"title"`
+	Description    string             `json:"description"`
+	Stage          SrlStage           `json:"stage"`
+	Position       float64            `json:"position"`
+	Difficulty     Difficulty         `json:"difficulty"`
+	Priority       Priority           `json:"priority"`
+	PreTest        pgtype.Numeric     `json:"pre_test"`
+	PostTest       pgtype.Numeric     `json:"post_test"`
+	PriorKnowledge string             `json:"prior_knowledge"`
+	Notes          string             `json:"notes"`
+	Rating         *int16             `json:"rating"`
+	ArchivedAt     pgtype.Timestamptz `json:"archived_at"`
+	ArchiveReason  *string            `json:"archive_reason"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
+
+type CardLink struct {
+	ID     uuid.UUID `json:"id"`
+	CardID uuid.UUID `json:"card_id"`
+	Url    string    `json:"url"`
+	Label  string    `json:"label"`
+}
+
+type ChecklistItem struct {
+	ID       uuid.UUID `json:"id"`
+	CardID   uuid.UUID `json:"card_id"`
+	Text     string    `json:"text"`
+	Done     bool      `json:"done"`
+	Position float64   `json:"position"`
+}
+
+type Course struct {
+	ID        uuid.UUID          `json:"id"`
+	ProgramID uuid.UUID          `json:"program_id"`
+	Code      string             `json:"code"`
+	Name      string             `json:"name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
 type Event struct {
 	ID        int64              `json:"id"`
 	UserID    pgtype.UUID        `json:"user_id"`
@@ -61,6 +238,13 @@ type Event struct {
 	Type      string             `json:"type"`
 	Data      []byte             `json:"data"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type LearningStrategy struct {
+	ID          uuid.UUID          `json:"id"`
+	Name        string             `json:"name"`
+	Description string             `json:"description"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
 type PasswordReset struct {
@@ -85,6 +269,14 @@ type RefreshToken struct {
 	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
 	RevokedAt pgtype.Timestamptz `json:"revoked_at"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type StudySession struct {
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	CardID    uuid.UUID          `json:"card_id"`
+	StartedAt pgtype.Timestamptz `json:"started_at"`
+	EndedAt   pgtype.Timestamptz `json:"ended_at"`
 }
 
 type User struct {

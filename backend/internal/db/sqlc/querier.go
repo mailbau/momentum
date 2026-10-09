@@ -11,23 +11,52 @@ import (
 )
 
 type Querier interface {
+	ArchiveCard(ctx context.Context, arg ArchiveCardParams) error
 	ConsumePasswordReset(ctx context.Context, tokenHash []byte) error
 	CountUsers(ctx context.Context) (int64, error)
+	CreateCard(ctx context.Context, arg CreateCardParams) (Card, error)
+	// Links
+	CreateCardLink(ctx context.Context, arg CreateCardLinkParams) (CardLink, error)
+	// Checklist items
+	CreateChecklistItem(ctx context.Context, arg CreateChecklistItemParams) (ChecklistItem, error)
 	CreateEvent(ctx context.Context, arg CreateEventParams) error
 	CreatePasswordReset(ctx context.Context, arg CreatePasswordResetParams) error
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteCard(ctx context.Context, arg DeleteCardParams) error
+	DeleteCardLink(ctx context.Context, id uuid.UUID) error
+	DeleteChecklistItem(ctx context.Context, id uuid.UUID) error
+	GetActiveStudySession(ctx context.Context, userID uuid.UUID) (StudySession, error)
+	GetCard(ctx context.Context, arg GetCardParams) (Card, error)
+	GetCardAnyUser(ctx context.Context, id uuid.UUID) (Card, error)
+	GetCardWithCourse(ctx context.Context, arg GetCardWithCourseParams) (GetCardWithCourseRow, error)
 	GetPasswordReset(ctx context.Context, tokenHash []byte) (PasswordReset, error)
 	GetProgramByCode(ctx context.Context, code string) (Program, error)
 	GetRefreshToken(ctx context.Context, tokenHash []byte) (RefreshToken, error)
 	GetUserByEmailOrUsername(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	ListActiveCards(ctx context.Context, userID uuid.UUID) ([]ListActiveCardsRow, error)
+	ListArchivedCards(ctx context.Context, userID uuid.UUID) ([]Card, error)
+	ListChecklistItemsByCardIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]ChecklistItem, error)
+	ListCourses(ctx context.Context) ([]Course, error)
 	ListEvents(ctx context.Context, arg ListEventsParams) ([]ListEventsRow, error)
+	ListLinksByCardIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]CardLink, error)
 	ListPrograms(ctx context.Context) ([]Program, error)
+	ListStrategies(ctx context.Context) ([]LearningStrategy, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	MarkUserOnboarded(ctx context.Context, id uuid.UUID) error
+	MoveCard(ctx context.Context, arg MoveCardParams) (Card, error)
+	NextChecklistPosition(ctx context.Context, cardID uuid.UUID) (float64, error)
+	NextPositionInStage(ctx context.Context, arg NextPositionInStageParams) (float64, error)
+	RestoreCard(ctx context.Context, arg RestoreCardParams) error
 	RevokeAllUserRefreshTokens(ctx context.Context, userID uuid.UUID) error
 	RevokeRefreshToken(ctx context.Context, tokenHash []byte) error
+	// Study sessions
+	StartStudySession(ctx context.Context, arg StartStudySessionParams) (StudySession, error)
+	StopStudySession(ctx context.Context, userID uuid.UUID) error
+	TotalStudyMinutesByCardIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]TotalStudyMinutesByCardIDsRow, error)
+	UpdateCardDetail(ctx context.Context, arg UpdateCardDetailParams) (Card, error)
+	UpdateChecklistItem(ctx context.Context, arg UpdateChecklistItemParams) (ChecklistItem, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error)
 }
